@@ -9,16 +9,19 @@ No game files are included. You need your own copy of the game.
 
 ## Status
 
-**Playable, still in testing.** Measured on a Switch v1 (Erista) in docked mode, with stock clocks
-(CPU 1785 MHz / GPU 768 MHz / RAM 1600 MHz) and the included performance profile:
+**Playable, still in testing.** Measured on a Switch v1 (Erista) in docked mode (CPU 1785 MHz /
+GPU 768 MHz / RAM 1600 MHz, no overclock) with the included profile, over a session of more than
+six hours without a game crash:
 
 | Where | Frame rate |
 |---|---|
-| Interiors, the pier, open roads | ~22–30 fps |
-| City on foot | ~12–17 fps |
-| Driving through dense city traffic | ~10–16 fps |
+| Interiors and the pier | ~25–28 fps |
+| City on foot and driving | ~15–20 fps (average ~17) |
+| Heaviest spots | ~11 fps |
 
-The game is capped at 30 fps. Raising performance in the city is the main work in progress.
+The included profile keeps traffic, pedestrians, sun shadows and reflections, keeps full detail
+around the player, and shortens how far the city is drawn. The game is capped at 30 fps. Raising
+performance in the city is the main work in progress.
 
 ## How it works (overview)
 
@@ -57,13 +60,14 @@ the console.
 
 ## Known issues
 
-- **City frame rate stays under 20 fps,** especially while driving through traffic. The CPU is the limit.
-- **One hospital interior drops to ~10 fps.**
-- **The performance profile trades looks for speed:** lighter traffic and pedestrians, no sun
-  shadows or reflections, shorter view distance.
+- **City frame rate stays under 20 fps** in the busiest areas. The CPU is the limit there.
+- **One hospital interior drops to ~10 fps.** The GPU is the limit there.
+- **The included profile shortens the view distance** (far clip 280 m) and uses a single shadow
+  cascade to keep the frame rate up.
+- **Handheld mode is slower** (the GPU runs at a lower clock); docked is recommended.
 - **The 640x360 internal resolution** (upscaled with FSR 1) looks soft on a TV.
-- **Out of memory:** raising `gta4_streaming_budget_scale` above 1.0 in `native.toml` can make the
-  game run out of memory and close after a few minutes. Keep the value from the included profile.
+- **Out of memory:** raising `gta4_streaming_budget_scale` above 1.25 in `native.toml` gains nothing
+  and has made the game run out of memory in earlier tests. Keep the included profile.
 - **Shader stutter:** the first minutes after an update stutter while shaders are rebuilt.
 - **Home Menu forwarder:** launching from a forwarder icon shows an error. Use the Homebrew Menu in
   title mode.
