@@ -62,7 +62,7 @@ the console.
 
 - **City frame rate stays under 20 fps** in the busiest areas. The CPU is the limit there.
 - **One hospital interior drops to ~10 fps.** The GPU is the limit there.
-- **The included profile shortens the view distance** (far clip 280 m) and uses a single shadow
+- **The included profile shortens the view distance** (far clip 200 m) and uses a single shadow
   cascade to keep the frame rate up.
 - **Handheld mode is slower** (the GPU runs at a lower clock); docked is recommended.
 - **The 640x360 internal resolution** (upscaled with FSR 1) looks soft on a TV.
