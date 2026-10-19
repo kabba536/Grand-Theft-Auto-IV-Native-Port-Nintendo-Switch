@@ -93,11 +93,25 @@ This Switch port is built on the work of these projects and people:
 - **StevensND**: the Need for Speed: Most Wanted Switch port, a key reference.
 - **switchbrew / devkitPro** (libnx and the toolchain) and **FFmpeg** (audio decoding).
 
+## Source code
+
+The `source/` folder contains everything needed to rebuild `gta4nx.nro`. The build runs on top of
+LibertyRecompAndroid, commit `7c97c58e1294331dffd617a5eb7267be55debdfc`:
+
+| File | What it is |
+|---|---|
+| `gta4nx-switch.patch` | The Switch port: all changes on top of that commit |
+| `build_in_docker.sh` | The build, run inside the `ghcr.io/autorunhq/switch-dev` Docker image |
+| `build_nvk.sh` | Rebuilds the NVK Vulkan driver (mesa-switch) with the shader compiler fixes |
+| `otimizar_codigo_gerado.py` | The pass over the recompiled code that runs during the build |
+
+Building needs your own copy of the game: the recompiled code is generated from your `default.xex`,
+and neither the game files nor the generated code are included here.
+
 ## License
 
-Liberty Recompiled and LibertyRecompAndroid are licensed under the **GNU GPL v3**, and so is this
-port. Testers who receive the build can request the source of the Switch modifications from the
-repository owner.
+Liberty Recompiled and LibertyRecompAndroid are licensed under the **GNU GPL v3** (see `LICENSE`),
+and so is this port.
 
 Grand Theft Auto IV is © Rockstar Games / Take-Two Interactive. This is a non-commercial fan
 project, not affiliated with or endorsed by them. No game data files are distributed here; the
