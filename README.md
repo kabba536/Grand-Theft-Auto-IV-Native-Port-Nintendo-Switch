@@ -40,6 +40,18 @@ horizon/population to control the extra cost.
 These are two different tuning choices, not a promise that one build will be faster in every scene.
 Frame rate still depends heavily on location, time of day, effects, shader cache and console mode.
 
+### Observed frame-rate ranges
+
+These are approximate results from real Nintendo Switch testing, not fixed guarantees. Performance
+can vary with the area, time of day, on-screen effects, shader cache and console mode.
+
+| Situation | v35 Performance | v50 Quality RC1 |
+|---|---:|---:|
+| General gameplay | **25–30 FPS** | **20–25 FPS** |
+| Some interiors | Up to **30 FPS** | Up to **30 FPS**, but may vary |
+| Driving through the city | **22–28 FPS**, depending on the in-game time of day | **17–24 FPS** |
+| Lowest observed value | Normally within the ranges above | **13 FPS** when a train passes; outside that case, observed minimums have not fallen below **17 FPS** |
+
 ## v35 Performance Edition — improvements
 
 v35 is the conservative performance release. Compared with the older build previously on the main

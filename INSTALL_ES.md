@@ -29,6 +29,19 @@ No mezcles el archivo `gta4nx.nro` de una versión con el `native.toml` de la ot
 - Todavía necesita más pruebas reales en consola, especialmente en sesiones largas.
 - Descarga: [v50-quality-rc1](https://github.com/kabba536/Grand-Theft-Auto-IV-Native-Port-Nintendo-Switch/releases/tag/v50-quality-rc1).
 
+### Rendimiento observado
+
+Son valores aproximados obtenidos en pruebas reales con Nintendo Switch, no una garantía fija. Los
+FPS pueden variar según la zona, la hora del juego, los efectos, la caché de shaders y el modo de la
+consola.
+
+| Situación | v35 Performance | v50 Quality RC1 |
+|---|---:|---:|
+| Juego normal | **25–30 FPS** | **20–25 FPS** |
+| Algunos interiores | Hasta **30 FPS** | Hasta **30 FPS**, con variaciones |
+| Conduciendo por la ciudad | **22–28 FPS**, según la hora del juego | **17–24 FPS** |
+| Mínimo observado | Normalmente dentro de los intervalos anteriores | **13 FPS** al pasar el tren; fuera de ese caso, los mínimos observados no bajan de **17 FPS** |
+
 ## 2. Requisitos
 
 - Nintendo Switch con custom firmware **Atmosphère**.
