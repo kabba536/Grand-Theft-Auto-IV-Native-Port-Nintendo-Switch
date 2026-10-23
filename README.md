@@ -1,83 +1,145 @@
 # GTA IV for Nintendo Switch (homebrew)
 
 Grand Theft Auto IV (Xbox 360, USA, Title Update 8) running natively on the Nintendo Switch as a
-homebrew NRO. **Private test build: please do not share it outside this repository.**
+homebrew NRO. No game files are included: you need your own copy of the game.
 
-No game files are included. You need your own copy of the game.
+> [!IMPORTANT]
+> **This port is still experimental. The final version is still in active development.** The goal
+> is a GTA IV port that feels truly worthy of the Nintendo Switch; neither download below is being
+> presented as the finished version.
 
----
+## Download: choose your build
 
-## Status
+The builds are published as separate releases so their files cannot be confused. **Do not mix an
+NRO from one release with the `native.toml` from the other.**
 
-**Playable, still in testing.** Measured on a Switch v1 (Erista) in docked mode (CPU 1785 MHz /
-GPU 768 MHz / RAM 1600 MHz, no overclock) with the included profile, over a session of more than
-six hours without a game crash:
+| Build | Recommended for | Status | Main trade-off |
+|---|---|---|---|
+| **[v35 — Performance Edition](https://github.com/kabba536/Grand-Theft-Auto-IV-Native-Port-Nintendo-Switch/releases/tag/v35-performance)** | The most consistent and established option | Stable test build | Lower nearby detail, but a longer horizon and denser population profile |
+| **[v50 RC1 — Quality Edition](https://github.com/kabba536/Grand-Theft-Auto-IV-Native-Port-Nintendo-Switch/releases/tag/v50-quality-rc1)** | Testing newer renderer work and sharper nearby geometry | **Pre-release / release candidate** | Higher nearby detail, but a shorter horizon and lower population profile; final console validation is still in progress |
 
-| Where | Frame rate |
-|---|---|
-| Interiors and the pier | ~25–28 fps |
-| City on foot and driving | ~15–20 fps (average ~17) |
-| Heaviest spots | ~11 fps |
+**Spanish installation guide:** [Guía de instalación en español](INSTALL_ES.md)
 
-The included profile keeps traffic, pedestrians, sun shadows and reflections, keeps full detail
-around the player, and shortens how far the city is drawn. The game is capped at 30 fps. Raising
-performance in the city is the main work in progress.
+### What “Performance” and “Quality” mean here
 
-## How it works (overview)
+“Quality” means higher **nearby geometry/detail** and better protection of complete vehicle and
+character shadows. It does not mean that every setting is higher. v35 draws the city farther away
+and uses more traffic and pedestrians; v50 concentrates more detail near the player and reduces the
+horizon/population to control the extra cost.
+
+| Setting / behaviour | v35 Performance | v50 Quality RC1 |
+|---|---:|---:|
+| Nearby detail scale | 0.45 | **0.65** |
+| Far clip | **150 m** | 100 m |
+| Traffic / parked cars | **0.38 / 0.35** | 0.30 / 0.28 |
+| Pedestrians / scenario pedestrians | **0.45 / 0.45** | 0.30 / 0.30 |
+| Sun-shadow distance scale | **0.65** | 0.50 |
+| Small sun-shadow pieces | Cut for performance | Cut earlier in the pipeline, while vehicles, people, wheels, hair and weapons are protected |
+| Release status | Stable test build | **Candidate; needs wider console testing** |
+
+These are two different tuning choices, not a promise that one build will be faster in every scene.
+Frame rate still depends heavily on location, time of day, effects, shader cache and console mode.
+
+## v35 Performance Edition — improvements
+
+v35 is the conservative performance release. Compared with the older build previously on the main
+repository page, it keeps the established PGO build, native audio DSP, texture cache and reserved
+texture arena, and adds the following renderer-side reductions:
+
+- the small sun-shadow-caster filter now works during normal play, not only while the profiler is
+  active;
+- three diagnostic fixed-state hashes per draw are disabled on Switch;
+- a diagnostic string is read once per frame instead of copied for every command;
+- repeated `required-binding-failed` messages are rate-limited instead of synchronously writing
+  tens of thousands of lines to the SD card during a session.
+
+The v35 profile favours a longer 150 m horizon and more street population, while keeping nearby
+detail at 0.45. It is the recommended starting point when predictability matters more than the
+newer visual experiments.
+
+## v50 Quality RC1 — improvements
+
+v50 includes the v35 work and the cumulative v36–v50 renderer changes:
+
+- reuses scratch memory for converted vertex buffers and avoids conversion work when a persistent
+  GPU copy already exists;
+- moves frame-queue back-pressure outside the command-capture lock and batches attachment barriers;
+- releases CPU-side texture copies after GPU upload and handles texture-capture allocation failure
+  without terminating the game;
+- removes repeated diagnostic-context clearing and reduces cross-core cache-line traffic in the
+  command pool;
+- adds a Switch lock-free path for compatible multi-object waits;
+- avoids re-registering unchanged vertex declarations and removes unnecessary vector-register
+  save/reload blocks from generated code where analysis proves they are unused;
+- protects vehicle, pedestrian, skinned, wheel, hair and weapon shaders from the small-shadow cut;
+- discards eligible small sun-shadow pieces before they cross the full renderer pipeline;
+- **v50 fixes the v49 shadow regression** by carrying the dropped draw's dirty-state words into the
+  next draw or clear, preventing stale shader constants and flickering/disappearing shadows.
+
+The dirty-state fix was replay-tested on PC over 4 × 20,000 randomized draws: the reference and v50
+paths produced zero incorrect draws, while the v49 behaviour produced 53,046. The project tests
+available for dirty state, draw-state cache and ownership/retirement also passed. Visual shadow
+quality and the final performance benefit must still be confirmed across more real Switch sessions,
+which is why this release is explicitly marked as a candidate.
+
+## How it works
 
 There is no emulator. The game's original PowerPC code is statically recompiled ahead of time and
-built as a native ARM program for the Switch, and its graphics are drawn natively through Vulkan.
-The Switch port adds the platform layer, rendering, audio and performance work needed to run it on
-the console.
+built as a native ARM program for the Switch, while graphics are rendered natively through Vulkan.
+The port adds the Switch platform layer, renderer, audio path and performance work needed to run it.
 
 ## Requirements
 
 - A Nintendo Switch running custom firmware (Atmosphère).
 - Your own **GTA IV Xbox 360 disc image (USA)** and **Title Update 8** (`TU_1A581VI_...`).
 - About 10 GB free on the SD card.
+- Docked mode is recommended for the higher GPU clock.
 
 ## Installation
 
-1. Download `gta4nx.nro` and `native.toml` from this repository.
-2. Copy them to the SD card:
-   ```
+1. Open the release for the build you want and download its runtime ZIP — not the source-code ZIP.
+2. Extract the ZIP to the root of the SD card. It installs:
+   ```text
    sdmc:/switch/gta4nx/gta4nx.nro
    sdmc:/switch/gta4nx/LibertyRecomp/native.toml
    ```
-3. Extract your disc image and copy the game files and the title update:
+3. Extract your own disc image and copy the game files and Title Update 8 to:
+   ```text
+   sdmc:/switch/gta4nx/install/gta4_disc/
+   sdmc:/switch/gta4nx/install/TU_1A581VI_.../
    ```
-   sdmc:/switch/gta4nx/install/gta4_disc/              <- contents of the disc
-   sdmc:/switch/gta4nx/install/TU_1A581VI_...          <- Title Update 8
-   ```
+4. Open any installed game while holding **R** to enter the Homebrew Menu in title mode. Do not
+   launch GTA4NX from the Album.
+5. Select GTA IV. The first start installs game data and builds the shader cache, so it takes longer
+   and may stutter heavily for the first few minutes.
 
-## Launching
+For the complete Spanish walkthrough, updating instructions and troubleshooting, see
+[INSTALL_ES.md](INSTALL_ES.md).
 
-1. Open any installed **game while holding R** to enter the Homebrew Menu in title mode, which
-   gives the game the full memory. Do **not** launch it from the Album.
-2. Select **GTA IV**.
-3. The first start installs the game data and builds the shader cache. This takes a while, and the
-   game stutters for the first few minutes.
+## Known limitations
 
-## Known issues
-
-- **City frame rate stays under 20 fps** in the busiest areas. The CPU is the limit there.
-- **One hospital interior drops to ~10 fps.** The GPU is the limit there.
-- **The included profile shortens the view distance** (far clip 200 m) and uses a single shadow
-  cascade to keep the frame rate up.
-- **Handheld mode is slower** (the GPU runs at a lower clock); docked is recommended.
-- **The 640x360 internal resolution** (upscaled with FSR 1) looks soft on a TV.
-- **Out of memory:** raising `gta4_streaming_budget_scale` above 1.25 in `native.toml` gains nothing
-  and has made the game run out of memory in earlier tests. Keep the included profile.
-- **Shader stutter:** the first minutes after an update stutter while shaders are rebuilt.
-- **Home Menu forwarder:** launching from a forwarder icon shows an error. Use the Homebrew Menu in
-  title mode.
+- Busy city areas remain CPU-limited; collisions, smoke, sparks and glass can become GPU-limited.
+- Handheld mode is slower because of its lower GPU clock.
+- The 640×360 internal resolution, upscaled with FSR 1, can look soft on a TV.
+- Raising `gta4_streaming_budget_scale` above 1.25 has not improved performance and has caused
+  out-of-memory failures in earlier tests. Keep the included profile.
+- The first minutes after an update can stutter while shaders are rebuilt.
+- Launching through a Home Menu forwarder currently shows an error; use the Homebrew Menu in title
+  mode.
+- v50 RC1 still needs wider console validation for long-session memory behaviour, shadow rendering
+  and its real-world performance gain.
 
 ## Reporting problems
 
-Open an issue with:
-- where you were (city on foot, driving, a mission, an interior) and how the frame rate felt;
-- what you were doing if the game closed or froze, and roughly how long after starting;
-- the folder `sdmc:/switch/gta4nx/logs/` (zipped).
+Open an issue and include:
+
+- the exact build name: `v35-performance` or `v50-quality-rc1`;
+- where you were and what you were doing;
+- whether the game closed, froze, showed broken shadows or only lost frame rate;
+- roughly how long the session had been running;
+- the folder `sdmc:/switch/gta4nx/logs/`, compressed as a ZIP.
+
+Do not upload game data, your disc image or the title update.
 
 ## Credits
 
@@ -95,18 +157,13 @@ This Switch port is built on the work of these projects and people:
 
 ## Source code
 
-The `source/` folder contains everything needed to rebuild `gta4nx.nro`. The build runs on top of
-LibertyRecompAndroid, commit `7c97c58e1294331dffd617a5eb7267be55debdfc`:
+Each GitHub Release includes a clearly named source-code archive for that exact build. The runtime
+is based on LibertyRecompAndroid commit `7c97c58e1294331dffd617a5eb7267be55debdfc`; the corresponding
+patch and build tooling are included in the matching source archive. Building requires your own
+`default.xex`; neither game files nor generated game code are distributed.
 
-| File | What it is |
-|---|---|
-| `gta4nx-switch.patch` | The Switch port: all changes on top of that commit |
-| `build_in_docker.sh` | The build, run inside the `ghcr.io/autorunhq/switch-dev` Docker image |
-| `build_nvk.sh` | Rebuilds the NVK Vulkan driver (mesa-switch) with the shader compiler fixes |
-| `otimizar_codigo_gerado.py` | The pass over the recompiled code that runs during the build |
-
-Building needs your own copy of the game: the recompiled code is generated from your `default.xex`,
-and neither the game files nor the generated code are included here.
+The historical `source/` directory remains available for the earlier repository build, but users
+and developers should use the source archive attached to the release they downloaded.
 
 ## License
 
@@ -114,5 +171,5 @@ Liberty Recompiled and LibertyRecompAndroid are licensed under the **GNU GPL v3*
 and so is this port.
 
 Grand Theft Auto IV is © Rockstar Games / Take-Two Interactive. This is a non-commercial fan
-project, not affiliated with or endorsed by them. No game data files are distributed here; the
-build only works with your own copy of the game.
+project, not affiliated with or endorsed by them. No game data files are distributed here; each
+build works only with the user's own copy of the game.
