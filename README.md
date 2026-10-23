@@ -27,16 +27,6 @@ character shadows. It does not mean that every setting is higher. v35 draws the 
 and uses more traffic and pedestrians; v50 concentrates more detail near the player and reduces the
 horizon/population to control the extra cost.
 
-| Setting / behaviour | v35 Performance | v50 Quality RC1 |
-|---|---:|---:|
-| Nearby detail scale | 0.45 | **0.65** |
-| Far clip | **150 m** | 100 m |
-| Traffic / parked cars | **0.38 / 0.35** | 0.30 / 0.28 |
-| Pedestrians / scenario pedestrians | **0.45 / 0.45** | 0.30 / 0.30 |
-| Sun-shadow distance scale | **0.65** | 0.50 |
-| Small sun-shadow pieces | Cut for performance | Cut earlier in the pipeline, while vehicles, people, wheels, hair and weapons are protected |
-| Release status | Stable test build | **Candidate; needs wider console testing** |
-
 These are two different tuning choices, not a promise that one build will be faster in every scene.
 Frame rate still depends heavily on location, time of day, effects, shader cache and console mode.
 
