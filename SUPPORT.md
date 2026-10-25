@@ -5,11 +5,12 @@ available without requiring payment.
 
 ## Financial support
 
-If you would like to support the development voluntarily, you can contribute through PayPal:
+If you would like to support the development voluntarily, use PayPal's normal **Send Money** option
+and enter the recipient email below:
 
-**[Donate through PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kabbapaypal%40gmail.com&currency_code=EUR&item_name=GTA4NX+and+future+community+projects)**
+**[Open PayPal Send Money](https://www.paypal.com/pt/digital-wallet/send-receive-money/send-money)**
 
-PayPal: `kabbapaypal@gmail.com`
+Recipient: `kabbapaypal@gmail.com`
 
 Any money received will be reinvested in development costs and in future projects requested by the
 community. A contribution does not purchase a feature, provide access to game files or guarantee a

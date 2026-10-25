@@ -145,12 +145,12 @@ Do not upload game data, your disc image or the title update.
 
 ## Support the project
 
-GTA4NX is a free, non-commercial community project. If you would like to support the work, you can
-make a voluntary contribution through PayPal:
+GTA4NX is a free, non-commercial community project. If you would like to support the work, use
+PayPal's normal **Send Money** option and enter the recipient email below:
 
-**[Support GTA4NX through PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kabbapaypal%40gmail.com&currency_code=EUR&item_name=GTA4NX+and+future+community+projects)**
+**[Open PayPal Send Money](https://www.paypal.com/pt/digital-wallet/send-receive-money/send-money)**
 
-PayPal: `kabbapaypal@gmail.com`
+Recipient: `kabbapaypal@gmail.com`
 
 Any money received will be reinvested in development costs and in future projects requested by the
 community. Contributions do not purchase features and do not guarantee a delivery date. See
