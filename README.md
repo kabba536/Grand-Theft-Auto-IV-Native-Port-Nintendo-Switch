@@ -143,6 +143,19 @@ Open an issue and include:
 
 Do not upload game data, your disc image or the title update.
 
+## Support the project
+
+GTA4NX is a free, non-commercial community project. If you would like to support the work, you can
+make a voluntary contribution through PayPal:
+
+**[Support GTA4NX through PayPal](https://www.paypal.com/cgi-bin/webscr?cmd=_donations&business=kabbapaypal%40gmail.com&currency_code=EUR&item_name=GTA4NX+and+future+community+projects)**
+
+PayPal: `kabbapaypal@gmail.com`
+
+Any money received will be reinvested in development costs and in future projects requested by the
+community. Contributions do not purchase features and do not guarantee a delivery date. See
+[SUPPORT.md](SUPPORT.md) for full details.
+
 ## Credits
 
 This Switch port is built on the work of these projects and people:
