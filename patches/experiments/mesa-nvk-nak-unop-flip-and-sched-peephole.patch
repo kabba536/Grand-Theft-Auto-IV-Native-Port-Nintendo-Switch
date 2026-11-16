@@ -1,0 +1,62 @@
+diff --git a/src/nouveau/compiler/nak/ir.rs b/src/nouveau/compiler/nak/ir.rs
+index fcace31..d9b2234 100644
+--- a/src/nouveau/compiler/nak/ir.rs
++++ b/src/nouveau/compiler/nak/ir.rs
+@@ -1693,7 +1693,8 @@ impl FloatCmpOp {
+             FloatCmpOp::UnordLe => FloatCmpOp::UnordGe,
+             FloatCmpOp::UnordGt => FloatCmpOp::UnordLt,
+             FloatCmpOp::UnordGe => FloatCmpOp::UnordLe,
+-            FloatCmpOp::IsNum | FloatCmpOp::IsNan => panic!("Cannot flip unop"),
++            // ford/funord (IsNum/IsNan) are symmetric in their two sources.
++            FloatCmpOp::IsNum | FloatCmpOp::IsNan => self,
+         }
+     }
+ }
+diff --git a/src/nouveau/compiler/nak/opt_instr_sched_common.rs b/src/nouveau/compiler/nak/opt_instr_sched_common.rs
+index 2d8be48..904c9ab 100644
+--- a/src/nouveau/compiler/nak/opt_instr_sched_common.rs
++++ b/src/nouveau/compiler/nak/opt_instr_sched_common.rs
+@@ -289,7 +289,7 @@ pub fn estimate_variable_latency(sm: &ShaderModelInfo, op: &Op) -> u32 {
+         | Op::Tld4(_)
+         | Op::Tmml(_)
+         | Op::Txd(_)
+-        | Op::Txq(_) => 32,
++        | Op::Txq(_) => 200,
+ 
+         // Surface ops
+         Op::SuLd(_)
+@@ -314,7 +314,7 @@ pub fn estimate_variable_latency(sm: &ShaderModelInfo, op: &Op) -> u32 {
+         | Op::Ipa(_)
+         | Op::CCtl(_)
+         | Op::LdTram(_)
+-        | Op::MemBar(_) => 32,
++        | Op::MemBar(_) => 200,
+ 
+         // Control-flow ops
+         Op::WarpSync(_) => 16,
+diff --git a/src/nouveau/compiler/nak_nir.c b/src/nouveau/compiler/nak_nir.c
+index beb01b1..17ac03d 100644
+--- a/src/nouveau/compiler/nak_nir.c
++++ b/src/nouveau/compiler/nak_nir.c
+@@ -204,7 +204,7 @@ nak_optimize_nir(nir_shader *nir, const struct nak_compiler *nak)
+       LOOP_OPT(nir, nir_opt_cse);
+ 
+       nir_opt_peephole_select_options peephole_select_options = {
+-         .limit = 0,
++         .limit = 8,
+          .discard_ok = true,
+       };
+       LOOP_OPT_NOT_IDEMPOTENT(nir, nir_opt_peephole_select,
+diff --git a/src/nouveau/vulkan/nvk_shader.c b/src/nouveau/vulkan/nvk_shader.c
+index e631049..fb2ca97 100644
+--- a/src/nouveau/vulkan/nvk_shader.c
++++ b/src/nouveau/vulkan/nvk_shader.c
+@@ -82,7 +82,7 @@ nvk_physical_device_compiler_flags(const struct nvk_physical_device *pdev)
+    return (no_cbufs ? 1 << 12 : 0)
+       | (use_edb_buffer_views ? 1 << 13 : 0)
+       | (instance->drirc.misc.ssbo_align_4b ? 1 << 14 : 0)
+-      | (UINT64_C(10) << 16) /* Compiler ABI revision. */
++      | (UINT64_C(11) << 16) /* Compiler ABI revision. */
+       | (nak_flags << 48);
+ }
+ 
