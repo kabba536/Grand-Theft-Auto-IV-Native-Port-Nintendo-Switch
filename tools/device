@@ -1,0 +1,119 @@
+#!/usr/bin/env python3
+"""Copy a local tree to FTP with verified, resumable uploads.
+
+FTP has no portable atomic rename-if-absent; do not run competing writers.
+Credentials are read from FTP_USER and FTP_PASSWORD.
+"""
+import argparse
+import ftplib
+import hashlib
+import json
+import os
+from pathlib import Path, PurePosixPath
+import uuid
+
+
+def digest_file(path):
+    h = hashlib.sha256()
+    with path.open('rb') as f:
+        for chunk in iter(lambda: f.read(1024 * 1024), b''):
+            h.update(chunk)
+    return h.hexdigest()
+
+
+def remote_digest(ftp, path):
+    h = hashlib.sha256()
+    ftp.retrbinary('RETR ' + path, h.update)
+    return h.hexdigest()
+
+
+def entry_type(ftp, path):
+    parent, name = path.rsplit('/', 1)
+    for entry, facts in ftp.mlsd(parent or '/'):
+        if entry == name:
+            return facts.get('type', '').lower() or 'unknown'
+    return None
+
+
+def ensure_directory(ftp, path):
+    current = ''
+    for part in PurePosixPath(path).parts[1:]:
+        current += '/' + part
+        kind = entry_type(ftp, current)
+        if kind is None:
+            try:
+                ftp.mkd(current)
+            except (ftplib.error_perm, ftplib.error_temp):
+                # Another client may have created it after our listing.
+                if entry_type(ftp, current) != 'dir':
+                    raise
+            kind = entry_type(ftp, current)
+        if kind != 'dir':
+            raise RuntimeError('not a directory: ' + current)
+
+
+def install(ftp, source, destination, checkpoint):
+    source = Path(source)
+    if source.is_symlink() or not source.is_dir():
+        raise ValueError('source must be a directory and not a symlink')
+    dest = PurePosixPath(destination)
+    if not dest.is_absolute() or '..' in dest.parts or any(c in destination for c in '\r\n'):
+        raise ValueError('destination must be an absolute FTP path without traversal')
+    files = []
+    for root, dirs, names in os.walk(source, followlinks=False):
+        for name in dirs + names:
+            p = Path(root) / name
+            if p.is_symlink() or any(c in name for c in '\r\n'):
+                raise ValueError('unsafe source entry: ' + str(p))
+        for name in names:
+            p = Path(root) / name
+            if not p.is_file():
+                raise ValueError('not a regular file: ' + str(p))
+            files.append(p)
+    for index, p in enumerate(sorted(files), 1):
+        print(f'file {index}/{len(files)}: {p.relative_to(source)}', flush=True)
+        rel = p.relative_to(source)
+        target = str(dest.joinpath(*rel.parts))
+        expected = digest_file(p)
+        parent = str(PurePosixPath(target).parent)
+        ensure_directory(ftp, parent)
+        if entry_type(ftp, target) is not None:
+            if remote_digest(ftp, target) != expected:
+                raise RuntimeError('existing target differs: ' + target)
+        else:
+            temp = target + '.upload-' + uuid.uuid4().hex
+            try:
+                with p.open('rb') as f:
+                    ftp.storbinary('STOR ' + temp, f)
+                if remote_digest(ftp, temp) != expected:
+                    raise RuntimeError('uploaded hash mismatch')
+                if entry_type(ftp, target) is not None:
+                    raise RuntimeError('target appeared during upload: ' + target)
+                ftp.rename(temp, target)
+            except Exception as exc:
+                raise RuntimeError(f'upload failed; temporary path: {temp}: {exc}') from exc
+        with open(checkpoint, 'a', encoding='utf-8') as log:
+            log.write(json.dumps({'source': str(p), 'target': target, 'sha256': expected}) + '\n')
+            log.flush()
+            os.fsync(log.fileno())
+
+
+def main():
+    parser = argparse.ArgumentParser(description=__doc__)
+    parser.add_argument('source')
+    parser.add_argument('destination')
+    parser.add_argument('--host', required=True)
+    parser.add_argument('--port', type=int, default=21)
+    parser.add_argument('--timeout', type=float, default=15)
+    parser.add_argument('--checkpoint', required=True)
+    args = parser.parse_args()
+    if not 0 < args.timeout <= 120:
+        parser.error('timeout must be between 0 and 120 seconds')
+    with ftplib.FTP() as ftp:
+        ftp.connect(args.host, args.port, timeout=args.timeout)
+        ftp.login(os.environ['FTP_USER'], os.environ['FTP_PASSWORD'])
+        install(ftp, args.source, args.destination, args.checkpoint)
+
+
+if __name__ == '__main__':
+    main()
